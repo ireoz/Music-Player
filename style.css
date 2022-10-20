@@ -101,7 +101,9 @@ h3 {
   filter: brightness(80%);
 }
 
-
+.fa-pause {
+  margin-right: 35px;
+}
 
 
 .main-button {
