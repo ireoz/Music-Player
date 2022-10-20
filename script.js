@@ -12,7 +12,8 @@ const musicData = [
 {audio: 'music/jacinto-1.mp3', img: 'img/jacinto-1.jpg'},
 {audio: 'music/jacinto-2.mp3', img: 'img/jacinto-2.jpg'},
 {audio: 'music/jacinto-3.mp3', img: 'img/jacinto-3.jpg'},
-{audio: 'music/metric-1.mp3', img: 'img/metric-1.jpg'}];
+{audio: 'music/metric-1.mp3', img: 'img/metric-1.jpg'},
+{audio: 'music/babsSinging.mpeg', img: 'img/babs-img.jpeg'}];
 let arrayPostion = 0;
 
 
@@ -20,15 +21,15 @@ let milliseconds = 0;
 let seconds = 0;
 let minutes = 0;
 let audioCurrentTime = 0;
-// let audioTotalTime = 0;
 let progressPercentage = 0;
+let myInterval = 0;
 
 
 
 
 
-function togglePlayPauseButton(){
-    audio.paused || audio.ended ? playMusic(): pauseMusic();
+function togglePlayPause(){
+    audio.paused ? playMusic(): pauseMusic();
 }
 
 function playMusic() {
@@ -43,11 +44,17 @@ function pauseMusic() {
     playPause.title = 'play';
 }
 
+// progress bar animation 
+function animateProgressBar() {
+   let songCurrentTime = audio.currentTime;
+   let songTotalTime = audio.duration;
+   progressPercentage = ((songCurrentTime/songTotalTime)*100).toFixed(0);
+   progressBar.style.width = progressPercentage + '%'
+}
 
 function isPlaying() {
-        displayCurrentTime()
-        setInterval(displayCurrentTime, 1000)
-        
+    displayCurrentTime()
+    myInterval = setInterval(displayCurrentTime, 1000)
     }
 //  set correct time format and write current time to the music player
 function displayCurrentTime(){
@@ -72,13 +79,6 @@ function displayTotalTime() {
 
 }
 
-// progress bar animation 
-function animateProgressBar() {
-   let songCurrentTime = audio.currentTime;
-   let songTotalTime = audio.duration;
-   progressPercentage = ((songCurrentTime/songTotalTime)*100).toFixed(0);
-   progressBar.style.width = progressPercentage + '%'
-}
 
 
 // change audio file and image
@@ -86,15 +86,19 @@ function changeAudioAndImage(direction) {
     direction === 'forward' ? arrayPostion++ : arrayPostion--;
     arrayPostion > musicData.length-1 ? arrayPostion = 0 : arrayPostion;
     arrayPostion < 0 ? arrayPostion = musicData.length-1 : arrayPostion;
-    // call below function to remove pause 
-    playPause.classList.contains('fa-pause') ? togglePlayPauseButton() : 0
+    clearInterval(myInterval);
+    // call below function to remove pause icon and set back play icon 
+    playPause.classList.contains('fa-pause') ? togglePlayPause() : 0
     audio.src = musicData[arrayPostion].audio;
     img.src = musicData[arrayPostion].img;
+    // set current time and progress back to zero
+    currentTime.innerHTML = '0:00';
+    progressBar.style.width = 0 + '%';
 }
 
 
 // Event listeners
-playPause.addEventListener('click', togglePlayPauseButton);
+playPause.addEventListener('click', togglePlayPause);
 
 forward.addEventListener('click', () => {
     changeAudioAndImage('forward');
