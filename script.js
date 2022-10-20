@@ -1,16 +1,26 @@
 const playPause = document.getElementById('playPause');
+const prev = document.getElementById('prev');
+const forward = document.getElementById('forward');
 const audio = document.querySelector('audio');
 const currentTime = document.getElementById('current-time');
 const duration = document.getElementById('duration');
 const progressBar = document.getElementById('progress');
+const img = document.querySelector('img');
 
+
+const musicData = [
+{audio: 'music/jacinto-1.mp3', img: 'img/jacinto-1.jpg'},
+{audio: 'music/jacinto-2.mp3', img: 'img/jacinto-2.jpg'},
+{audio: 'music/jacinto-3.mp3', img: 'img/jacinto-3.jpg'},
+{audio: 'music/metric-1.mp3', img: 'img/metric-1.jpg'}];
+let arrayPostion = 0;
 
 
 let milliseconds = 0;
 let seconds = 0;
 let minutes = 0;
 let audioCurrentTime = 0;
-let audioTotalTime = 0;
+// let audioTotalTime = 0;
 let progressPercentage = 0;
 
 
@@ -18,7 +28,7 @@ let progressPercentage = 0;
 
 
 function togglePlayPauseButton(){
-    audio.paused ? playMusic(): pauseMusic();
+    audio.paused || audio.ended ? playMusic(): pauseMusic();
 }
 
 function playMusic() {
@@ -57,7 +67,7 @@ function displayTotalTime() {
   let tS = audio.duration.toFixed(0) % 60;
    let tM = (audio.duration/60).toFixed(0);
    tS < 10 ? tS = '0' + tS : tS;
-   audioTotalTime = `${tM}:${tS}`;
+   let audioTotalTime = `${tM}:${tS}`;
    duration.innerHTML = audioTotalTime;
 
 }
@@ -70,7 +80,31 @@ function animateProgressBar() {
    progressBar.style.width = progressPercentage + '%'
 }
 
+
+// change audio file and image
+function changeAudioAndImage(direction) {
+    direction === 'forward' ? arrayPostion++ : arrayPostion--;
+    arrayPostion > musicData.length-1 ? arrayPostion = 0 : arrayPostion;
+    arrayPostion < 0 ? arrayPostion = musicData.length-1 : arrayPostion;
+    // call below function to remove pause 
+    playPause.classList.contains('fa-pause') ? togglePlayPauseButton() : 0
+    audio.src = musicData[arrayPostion].audio;
+    img.src = musicData[arrayPostion].img;
+}
+
+
 // Event listeners
 playPause.addEventListener('click', togglePlayPauseButton);
+
+forward.addEventListener('click', () => {
+    changeAudioAndImage('forward');
+});
+
+prev.addEventListener('click', () => {
+    changeAudioAndImage('prev');
+});
+
 audio.addEventListener('play', isPlaying);
-audio.addEventListener('loadeddata', displayTotalTime);
+audio.addEventListener('loadedmetadata', displayTotalTime);
+
+
