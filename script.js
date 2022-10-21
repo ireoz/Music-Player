@@ -25,7 +25,7 @@ let audioCurrentTime = 0;
 let progressPercentage = 0;
 let myInterval = 0;
 let isPlaying = false;
-let duration = 0;
+// let duration = 0;
 
 
 
@@ -94,13 +94,14 @@ function changeAudioAndImage(direction) {
 
 // end user can select a point on the progress bar to fast forward or go back on the audio file.
 function selectPointOnProgressBar(e) {
-    // get width of progress bar 
-    let clientWidth = e.srcElement.clientWidth;
+    // set width of progress bar. This was calculated by viewing the event on the console and recording clientWidth property.
+    let clientWidth = 360;
     // get position clicked by end user
     let positionClicked = e.offsetX;
     // the percentage value: where end user clicked against the full size of the progress bar container
     let positionPercentage = (positionClicked/clientWidth);
     // finding the associated percentage within the audio duration property.
+    const {duration} = audio;
     let playAudioFrom = positionPercentage * duration;
     // playing the audio from position within the audio file calculated from above.
     audio.currentTime = playAudioFrom;
