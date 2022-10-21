@@ -2,8 +2,8 @@ const playPause = document.getElementById('playPause');
 const prev = document.getElementById('prev');
 const forward = document.getElementById('forward');
 const audio = document.querySelector('audio');
-const currentTime = document.getElementById('current-time');
-const duration = document.getElementById('duration');
+const currentTimeEl = document.getElementById('current-time');
+const durationEl = document.getElementById('duration');
 const progressBar = document.getElementById('progress');
 const img = document.querySelector('img');
 
@@ -23,61 +23,85 @@ let minutes = 0;
 let audioCurrentTime = 0;
 let progressPercentage = 0;
 let myInterval = 0;
+let isPlaying = false;
 
 
 
 
 
-function togglePlayPause(){
-    audio.paused ? playMusic(): pauseMusic();
+function playOrPauseAudio(){
+    !isPlaying ? playMusic(): pauseMusic();
 }
 
 function playMusic() {
+    isPlaying = true;
     audio.play()
     playPause.classList.replace('fa-play', 'fa-pause');
     playPause.title = 'pause';
 }
 
 function pauseMusic() {
+    isPlaying = false;
     audio.pause()
     playPause.classList.replace('fa-pause', 'fa-play');
     playPause.title = 'play';
 }
 
 // progress bar animation 
-function animateProgressBar() {
-   let songCurrentTime = audio.currentTime;
-   let songTotalTime = audio.duration;
-   progressPercentage = ((songCurrentTime/songTotalTime)*100).toFixed(0);
-   progressBar.style.width = progressPercentage + '%'
+function animateProgressBar(e) {
+    let {currentTime, duration} = e.srcElement;   
+    progressPercentage = ((currentTime/duration)*100);
+    progressBar.style.width = progressPercentage + '%';
 }
-
-function isPlaying() {
-    displayCurrentTime()
-    myInterval = setInterval(displayCurrentTime, 1000)
-    }
-//  set correct time format and write current time to the music player
-function displayCurrentTime(){
    
-   seconds = audio.currentTime.toFixed(0);
-   seconds >= 60 ? minutes = (seconds/60).toFixed(0) : 0;
-   minutes >= 1 ? seconds = seconds % 60 : 0;
-   seconds < 10 ? seconds = '0' + seconds : seconds;
-   audioCurrentTime = `${minutes}:${seconds}`;
-   currentTime.innerHTML = audioCurrentTime;
-   animateProgressBar();
+function displayDurationOfAudio(e) {
+    let {currentTime, duration} = e.srcElement;
+    //    calculate audio duration 
+       let minutes = Math.floor(duration/60);
+       let seconds = Math.floor(duration % 60);
+       seconds < 10 ? seconds = `0${seconds}`: seconds;
+       let audioDuration = `${minutes}:${seconds}`;
+       durationEl.innerHTML = audioDuration;
 
-}
+    }
 
-// set correct time format and write song total time to the music player
-function displayTotalTime() { 
-  let tS = audio.duration.toFixed(0) % 60;
-   let tM = (audio.duration/60).toFixed(0);
-   tS < 10 ? tS = '0' + tS : tS;
-   let audioTotalTime = `${tM}:${tS}`;
-   duration.innerHTML = audioTotalTime;
+    function displayCurrentTimeOfAudio(e) {
+      let {currentTime, duration} = e.srcElement;  
+        // calculate audio current time
+      let currentMinutes = Math.floor(currentTime/60);
+      let currentSeconds = Math.floor(currentTime % 60);
+      currentSeconds < 10 ? currentSeconds = `0${currentSeconds}`: currentSeconds;
+      let audioCurrent = `${currentMinutes}:${currentSeconds}`;
+      currentTimeEl.innerHTML = audioCurrent;
+    }
 
-}
+
+
+// function isPlaying() {
+//     displayCurrentTime()
+//     myInterval = setInterval(displayCurrentTime, 1000)
+//     }
+//  set correct time format and write current time to the music player
+// function displayCurrentTime(){
+   
+//    seconds = audio.currentTime.toFixed(0);
+//    seconds >= 60 ? minutes = (seconds/60).toFixed(0) : 0;
+//    minutes >= 1 ? seconds = seconds % 60 : 0;
+//    seconds < 10 ? seconds = '0' + seconds : seconds;
+//    let audioDuration = `${minutes}:${seconds}`;
+//    currentTime.innerHTML = audioDuration;
+
+// }
+
+// // set correct time format and write song total time to the music player
+// function displayTotalTime() { 
+//   let tS = audio.duration.toFixed(0) % 60;
+//    let tM = (audio.duration/60).toFixed(0);
+//    tS < 10 ? tS = '0' + tS : tS;
+//    let audioTotalTime = `${tM}:${tS}`;
+//    duration.innerHTML = audioTotalTime;
+
+// }
 
 
 
@@ -86,19 +110,17 @@ function changeAudioAndImage(direction) {
     direction === 'forward' ? arrayPostion++ : arrayPostion--;
     arrayPostion > musicData.length-1 ? arrayPostion = 0 : arrayPostion;
     arrayPostion < 0 ? arrayPostion = musicData.length-1 : arrayPostion;
-    clearInterval(myInterval);
     // call below function to remove pause icon and set back play icon 
-    playPause.classList.contains('fa-pause') ? togglePlayPause() : 0
+    playPause.classList.contains('fa-pause') ? playOrPauseAudio() : 0
     audio.src = musicData[arrayPostion].audio;
     img.src = musicData[arrayPostion].img;
-    // set current time and progress back to zero
-    currentTime.innerHTML = '0:00';
-    progressBar.style.width = 0 + '%';
+    // set progress bar back to 0
+    progressBar.style.width = '0%';
 }
 
 
 // Event listeners
-playPause.addEventListener('click', togglePlayPause);
+playPause.addEventListener('click', playOrPauseAudio);
 
 forward.addEventListener('click', () => {
     changeAudioAndImage('forward');
@@ -108,7 +130,7 @@ prev.addEventListener('click', () => {
     changeAudioAndImage('prev');
 });
 
-audio.addEventListener('play', isPlaying);
-audio.addEventListener('loadedmetadata', displayTotalTime);
-
-
+// audio.addEventListener('play', isPlaying);
+audio.addEventListener('loadedmetadata', displayDurationOfAudio);
+audio.addEventListener('timeupdate', animateProgressBar);
+audio.addEventListener('timeupdate', displayCurrentTimeOfAudio);
