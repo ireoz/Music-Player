@@ -5,6 +5,7 @@ const audio = document.querySelector('audio');
 const currentTimeEl = document.getElementById('current-time');
 const durationEl = document.getElementById('duration');
 const progressBar = document.getElementById('progress');
+const progressContainer = document.getElementById('progress-container');
 const img = document.querySelector('img');
 
 
@@ -24,6 +25,7 @@ let audioCurrentTime = 0;
 let progressPercentage = 0;
 let myInterval = 0;
 let isPlaying = false;
+let duration = 0;
 
 
 
@@ -55,7 +57,7 @@ function animateProgressBar(e) {
 }
    
 function displayDurationOfAudio(e) {
-    let {currentTime, duration} = e.srcElement;
+       duration = e.srcElement.duration;
     //    calculate audio duration 
        let minutes = Math.floor(duration/60);
        let seconds = Math.floor(duration % 60);
@@ -66,7 +68,7 @@ function displayDurationOfAudio(e) {
     }
 
     function displayCurrentTimeOfAudio(e) {
-      let {currentTime, duration} = e.srcElement;  
+      let {currentTime} = e.srcElement;  
         // calculate audio current time
       let currentMinutes = Math.floor(currentTime/60);
       let currentSeconds = Math.floor(currentTime % 60);
@@ -74,34 +76,6 @@ function displayDurationOfAudio(e) {
       let audioCurrent = `${currentMinutes}:${currentSeconds}`;
       currentTimeEl.innerHTML = audioCurrent;
     }
-
-
-
-// function isPlaying() {
-//     displayCurrentTime()
-//     myInterval = setInterval(displayCurrentTime, 1000)
-//     }
-//  set correct time format and write current time to the music player
-// function displayCurrentTime(){
-   
-//    seconds = audio.currentTime.toFixed(0);
-//    seconds >= 60 ? minutes = (seconds/60).toFixed(0) : 0;
-//    minutes >= 1 ? seconds = seconds % 60 : 0;
-//    seconds < 10 ? seconds = '0' + seconds : seconds;
-//    let audioDuration = `${minutes}:${seconds}`;
-//    currentTime.innerHTML = audioDuration;
-
-// }
-
-// // set correct time format and write song total time to the music player
-// function displayTotalTime() { 
-//   let tS = audio.duration.toFixed(0) % 60;
-//    let tM = (audio.duration/60).toFixed(0);
-//    tS < 10 ? tS = '0' + tS : tS;
-//    let audioTotalTime = `${tM}:${tS}`;
-//    duration.innerHTML = audioTotalTime;
-
-// }
 
 
 
@@ -118,6 +92,20 @@ function changeAudioAndImage(direction) {
     progressBar.style.width = '0%';
 }
 
+// end user can select a point on the progress bar to fast forward or go back on the audio file.
+function selectPointOnProgressBar(e) {
+    // get width of progress bar 
+    let clientWidth = e.srcElement.clientWidth;
+    // get position clicked by end user
+    let positionClicked = e.offsetX;
+    // the percentage value: where end user clicked against the full size of the progress bar container
+    let positionPercentage = (positionClicked/clientWidth);
+    // finding the associated percentage within the audio duration property.
+    let playAudioFrom = positionPercentage * duration;
+    // playing the audio from position within the audio file calculated from above.
+    audio.currentTime = playAudioFrom;
+}
+
 
 // Event listeners
 playPause.addEventListener('click', playOrPauseAudio);
@@ -130,7 +118,9 @@ prev.addEventListener('click', () => {
     changeAudioAndImage('prev');
 });
 
-// audio.addEventListener('play', isPlaying);
+
 audio.addEventListener('loadedmetadata', displayDurationOfAudio);
 audio.addEventListener('timeupdate', animateProgressBar);
 audio.addEventListener('timeupdate', displayCurrentTimeOfAudio);
+progressContainer.addEventListener('click', selectPointOnProgressBar);
+
